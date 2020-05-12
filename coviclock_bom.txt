@@ -1,0 +1,12 @@
+R1: PTH Resistor 0Ω ¼W or bridge
+R2: PTH Resistor 10KΩ ¼W
+C1: PTH Capacitor, 100nF multilayer, 5mm pitch
+C2: PTH Capacitor, 100nF multilayer, 5mm pitch
+Q1: N-Channel Mosfet BS170, TO-92 format
+SENS: Analog temperature sensor MCP9700, TO-92 format
+U1: NodeMCU Lolin V3 (having CH340G - dimensions 31x57mm)
+U2: 240x320 SPI Color Display ILI9341, 2.8"
+S1: PTH Vertical tactile switch 6mm
+S2: PTH Vertical tactile switch 6mm
+BUZZER: PTH Active buzzer 5V
+J1: 2.54mm 3-poles male pinstrip + jumper
