@@ -434,6 +434,7 @@ ICACHE_RAM_ATTR void Switch1_ISR(void)
 ICACHE_RAM_ATTR void Switch2_ISR(void)
   {
   Serial.println("Switch TWO");
+  MQTT_send();
   }
   
 // connect to CSV server for downloading data
@@ -651,6 +652,16 @@ void printClock(void)
   tft.print("https://www.settorezero.com");
   }
 
+// Send some data over MQTT
+void MQTT_send(void)
+  {
+  // [region],[infecteds],[deads]
+  String Result=String(csvFind)+String(",")+String(csvRowField[12]+","+csvRowField[14]);
+  char buffer[30];// increment this if your region has a very long name
+  Result.toCharArray(buffer,sizeof(buffer));
+  MQTTClient.publish(topic_coviclock, buffer);
+  }
+
 // refresh display with new data obtained from CSV
 void updateDisplayData(void)
   {
@@ -809,6 +820,25 @@ void loop(void)
   static float temp=0; // temperature value
   static bool lastDst=checkDST(); // DST status, used for forcing time update since normally will occur after 00:00
 
+  // check for wifi/MQTT connection
+  wl_status_t wifiStatus = WiFi.status();
+  if(wifiStatus != WL_CONNECTED)
+    {
+    Serial.print(millis());
+    Serial.println(" No WiFi connection");
+    WiFi_connect(false);
+    }
+  else
+    {
+     if (!MQTTClient.connected()) 
+      {
+      Serial.print(millis());
+      Serial.println(" No MQTT connection");
+      mqtt_connect();
+      }
+    }
+  MQTTClient.loop(); // needed by pubsubclient
+	
   // check if clock update if needed every hour
   if (clockIsSet && !fatalError) 
     {
