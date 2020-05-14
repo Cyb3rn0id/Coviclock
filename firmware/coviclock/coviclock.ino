@@ -187,7 +187,7 @@ void WiFi_connect(bool debug)
       retr++;
       }
     Serial.print(".");
-	  if (retr==RETRIES_WIFI)
+    if (retr==RETRIES_WIFI)
       {
       // too many retries with same connection status: something is gone wrong
       if (debug)
@@ -199,7 +199,7 @@ void WiFi_connect(bool debug)
         tft.println("Or WiFi is not available");
         }
       Serial.println("]");
-	    Serial.print(millis());
+      Serial.print(millis());
       Serial.println(" Too many retries");
       Serial.println("Please check wifi settings");
       retr=0;
@@ -214,7 +214,7 @@ void WiFi_connect(bool debug)
     tft.print("IP address: ");
     tft.println(WiFi.localIP());  
     }
-   Serial.println("]");
+  Serial.println("]");
   Serial.print(millis());
   Serial.print(" WiFi connected. ");
   Serial.print("Device IP address is: ");
@@ -257,25 +257,25 @@ bool updateTime(bool forced)
     {
     // if is a re-check, I'll do it every NTP_RETRY_MINUTES minutes
     if (reCheck)
-		  {
-		  // millis has 'rollovered' (can say it?!)
-		  if (millis()<lastChecked) lastChecked=millis();
-		  // NTP_RETRY_MINUTES minutes passed from the last check => try to re-get time
+      {
+      // millis has 'rollovered' (can say it?!)
+      if (millis()<lastChecked) lastChecked=millis();
+      // NTP_RETRY_MINUTES minutes passed from the last check => try to re-get time
       long retrymillis=lastChecked+(NTP_RETRY_MINUTES*60*1000);
-		  if (millis()>retrymillis) 
-			  {
+      if (millis()>retrymillis) 
+        {
         Serial.print(millis());
-			  Serial.println(" Trying to update the clock, again!");
-			  unsigned long t=ntpClient.getUnixTime(); 
-			  }
-		  }
-	else // it's no a re-check: it's the first time I check
-		  {
+        Serial.println(" Trying to update the clock, again!");
+        unsigned long t=ntpClient.getUnixTime(); 
+        }
+      }
+   else // it's no a re-check: it's the first time I check
+      {
       Serial.print(millis());
-		  Serial.println(" Trying to update the clock for the first time today");
-		  t=ntpClient.getUnixTime();
-		  }
-	if (t>0) // time is updated! yeah!
+      Serial.println(" Trying to update the clock for the first time today");
+      t=ntpClient.getUnixTime();
+      }
+    if (t>0) // time is updated! yeah!
       {
       setTime(t);
       Serial.print(millis());
@@ -295,13 +295,13 @@ bool updateTime(bool forced)
       prevDay=weekday(); // this will prevent further updating for today!
       return(true);
       }
-  else
+    else
       {
-	    // time not updated, I'll recheck later...
-	    lastChecked=millis();
-	    reCheck=true;
+      // time not updated, I'll recheck later...
+      lastChecked=millis();
+      reCheck=true;
       Serial.print(lastChecked);     
-	    Serial.println(" Clock not updated");
+      Serial.println(" Clock not updated");
       return(false);
       }
     } // prevDay!=today
@@ -364,8 +364,8 @@ bool checkDST(void)
       DST=(month()==3?false:true);
       }
     } // this month is 3 or 10
-   // in all other cases there is no DST (Month is Jan,Feb,Nov,Dec)
-   return (DST);
+  // in all other cases there is no DST (Month is Jan,Feb,Nov,Dec)
+  return (DST);
   }
   
 // interrupt vector on button S1 pressing
@@ -426,16 +426,17 @@ int downloadCSV(bool debug)
     Serial.print(millis());
     Serial.println(" Connected to CSV host!");
     // send the GET request to the host
-    client.print(
-                String("GET /") + csvPath + " HTTP/1.1\r\n" +
-                "Host: " + csvHost+ "\r\n" +
-                "User-Agent: esp8266\r\n"+
-                // "Accept: text/xml,application/xml,application/xhtml+xml,text/html*/*\r\n"+
-                // "Accept-Language: en-us\r\n"+
-                // "Accept-Charset: ISO-8859-1,utf-8\r\n"+
-                "Connection: close\r\n"+
-                "\r\n"
-                );
+    client.print
+      (
+      String("GET /") + csvPath + " HTTP/1.1\r\n" +
+      "Host: " + csvHost+ "\r\n" +
+      "User-Agent: esp8266\r\n"+
+      // "Accept: text/xml,application/xml,application/xhtml+xml,text/html*/*\r\n"+
+      // "Accept-Language: en-us\r\n"+
+      // "Accept-Charset: ISO-8859-1,utf-8\r\n"+
+      "Connection: close\r\n"+
+      "\r\n"
+      );
     tft.setTextColor(ILI9341_GREEN);  
     Serial.print(millis());
     Serial.println( " Response from the host:");
@@ -446,7 +447,7 @@ int downloadCSV(bool debug)
       Serial.print("   > ");
       Serial.println(tempRow);
 
-      // given a 404 or 301 header
+      // 404 or 301 header
       if ((tempRow.indexOf("HTTP/1.1 404")>0) || (tempRow.indexOf("HTTP/1.1 301")>0))
         {
         Serial.print(millis());
@@ -462,7 +463,7 @@ int downloadCSV(bool debug)
         client.stop();
         response=1;
         Serial.print(millis());
-		    Serial.println(" String found. Fetching stopped. Connection closed");
+        Serial.println(" String found. Fetching stopped. Connection closed");
         // will print the found string below
         if (debug) tft.println("Connection closed");
         
@@ -489,33 +490,33 @@ int downloadCSV(bool debug)
       } // while client connected or available
 
    switch(response)
-    {
+      {
       case 0: // string not found
+        {
+        client.stop();          
+        if (debug)
           {
-          client.stop();          
-          if (debug)
-            {
-            tft.setTextColor(ILI9341_GREEN);  
-            tft.println("Connection closed");
-            tft.setTextColor(ILI9341_RED);  
-            tft.println("string not found");
-            }
-          Serial.print(millis());
-          Serial.println(" String not found. Connection closed");
+          tft.setTextColor(ILI9341_GREEN);  
+          tft.println("Connection closed");
+          tft.setTextColor(ILI9341_RED);  
+          tft.println("string not found");
           }
-        break;
+        Serial.print(millis());
+        Serial.println(" String not found. Connection closed");
+        }
+      break;
         
       case 1: // found
         {
         if (debug)
-            {
-            tft.setTextColor(ILI9341_GREEN);
-            tft.println("fetched row:");
-            tft.println();
-            tft.setTextColor(ILI9341_YELLOW);
-            tft.println(csvRow);
-            delay(2000);
-            }
+          {
+          tft.setTextColor(ILI9341_GREEN);
+          tft.println("fetched row:");
+          tft.println();
+          tft.setTextColor(ILI9341_YELLOW);
+          tft.println(csvRow);
+          delay(2000);
+          }
         Serial.print(millis());
         Serial.print(" Fetched row: ");
         Serial.println(csvRow);
@@ -529,20 +530,20 @@ int downloadCSV(bool debug)
         Serial.print(" CSV datecode is: ");
         Serial.println(csvDateCode);
         }
-        break;
+      break;
         
       case -1: // error
         {
         if (debug) 
           {
-            tft.setTextColor(ILI9341_RED);
-            tft.println("ERROR 404 or 301");  
+          tft.setTextColor(ILI9341_RED);
+          tft.println("ERROR 404 or 301");  
           }
         }
-        break;
+      break;
       } // \switch
     } // \client connected
-else
+  else
     {
     // connection failure
     if (debug)
@@ -551,7 +552,7 @@ else
       tft.println("Cannot connect");
       }
     Serial.print(millis());
-	  Serial.println(" Cannot connect to CSV host. Sorry");
+    Serial.println(" Cannot connect to CSV host. Sorry");
     client.stop();
     response=-2; // connection error
     }
@@ -598,7 +599,7 @@ void printClock(void)
 // refresh display with new data obtained from CSV
 void updateDisplayData(void)
   {
-	/* csvRowField[] array:
+   /* csvRowField[] array:
    * 
    * 0 data (ex.: 2020-03-25T17:00:00)
    * 1 stato (IT)
@@ -623,7 +624,7 @@ void updateDisplayData(void)
   
   Serial.print(millis());
   Serial.println(" Updating display with new data");
-	// write CSV results on the screen
+  // write CSV results on the screen
   tft.fillScreen(ILI9341_BLACK);
   tft.setCursor(0, 0); // x,y, I start from 7 since my display has first rows broken... :(
   tft.setTextColor(ILI9341_WHITE);  
@@ -779,37 +780,36 @@ void loop(void)
   // (or we're at first run since -1!=0) => check for a CSV update
   if ((clockIsSet) && (lastCsvDateCode!=todayDateCode) && (!fatalError))
     {
-  	// check if is time to update
-		if (!firstCheck && !reCheck) // not verified at startup since firstCheck=true and reCheck=false
-			{
-			if (hour()>=CSV_UPDATE_HOUR) 
-				{
-				firstCheck=true;
-        Serial.print(millis());
-				Serial.println(" It's hour to update the CSV");
-				}
-			}
+    // check if is time to update
+    if (!firstCheck && !reCheck) // not verified at startup since firstCheck=true and reCheck=false
+       {
+       if (hour()>=CSV_UPDATE_HOUR) 
+          {
+          firstCheck=true;
+          Serial.print(millis());
+          Serial.println(" It's time to update the CSV");
+          }
+       }
     // following line bypass thet millis() rollover
     if ((reCheck) && (millis()<lastCheckTime)) lastCheckTime=millis();
-		
-		// we must download the CSV for the first time
-		// or is a recheck, then CSV_RETRY_MINUTES minutes must be passed from last search
+    // we must download the CSV for the first time
+    // or is a recheck, then CSV_RETRY_MINUTES minutes must be passed from last search
     long retrymillis=lastCheckTime+(CSV_RETRY_MINUTES*60*1000);
-		if (firstCheck || (reCheck && (millis()>retrymillis)))
-			  {
-			  if (firstCheck)
-				  {
-          Serial.print(millis());
-				  Serial.println(" This is the first check of the CSV file in this day");
-				  }
-			  else
-				  {
-          Serial.print(millis());
-			    Serial.println(" Re-checking the CSV file since the first check gone bad");
-				  }
-			  csvDownloaded=downloadCSV(firstStart); // debug on display only first time
-			  }    
-		  }
+    if (firstCheck || (reCheck && (millis()>retrymillis)))
+      {
+      if (firstCheck)
+        {
+        Serial.print(millis());
+        Serial.println(" This is the first check of the CSV file in this day");
+        }
+      else
+        {
+        Serial.print(millis());
+        Serial.println(" Re-checking the CSV file since the first check gone bad");
+        }
+      csvDownloaded=downloadCSV(firstStart); // debug on display only first time
+      }    
+    }
   else
     {
     csvDownloaded=0;
