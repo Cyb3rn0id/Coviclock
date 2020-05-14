@@ -67,12 +67,12 @@ const char* password="[YOUR-SSID-PASSWORD]";
 IPAddress deviceIP(192, 168, 1, 166); // ESP8266 static address
 IPAddress gateway(192, 168, 1, 1); // router address
 IPAddress subnet(255, 255, 255, 0); // subnet mask
-IPAddress dns1 (8, 8, 8, 8); // first DNS, required for easyntp with static ip (https://github.com/aharshac/EasyNTPClient/issues/4)
-IPAddress dns2 (8, 8, 4, 4); // second DNS, required for easyntp with static ip
+IPAddress dns1(8, 8, 8, 8); // first DNS, required for easyntp with static ip (https://github.com/aharshac/EasyNTPClient/issues/4)
+IPAddress dns2(8, 8, 4, 4); // second DNS, required for easyntp with static ip
 #endif
 
 // MQTT Parameters
-const char* mqtt_server = "[YOUR-MQTT-BROKER-IP-ADDRESS]";
+IPAddress mqtt_server=(192,168,1,100); // change with IP of your MQTT server!
 const uint16_t mqtt_port = 1883; //8883 over SSL
 const char* mqtt_clientID = "Coviclock";
 #define MQTT_USE_PASSWORD // Comment this if your MQTT server does not require user/password
@@ -241,7 +241,7 @@ void WiFi_connect(bool debug)
       retr++;
       }
     Serial.print(".");
-	  if (retr==RETRIES_WIFI)
+    if (retr==RETRIES_WIFI)
       {
       // too many retries with same connection status: something is gone wrong
       if (debug)
@@ -253,7 +253,7 @@ void WiFi_connect(bool debug)
         tft.println("Or WiFi is not available");
         }
       Serial.println("]");
-	    Serial.print(millis());
+      Serial.print(millis());
       Serial.println(" Too many retries");
       Serial.println("Please check wifi settings");
       retr=0;
@@ -313,25 +313,25 @@ bool updateTime(bool forced)
     {
     // if is a re-check, I'll do it every NTP_RETRY_MINUTES minutes
     if (reCheck)
-		  {
-		  // millis has 'rollovered' (can say it?!)
-		  if (millis()<lastChecked) lastChecked=millis();
-		  // NTP_RETRY_MINUTES minutes passed from the last check => try to re-get time
+      {
+      // millis has 'rollovered' (can say it?!)
+      if (millis()<lastChecked) lastChecked=millis();
+      // NTP_RETRY_MINUTES minutes passed from the last check => try to re-get time
       long retrymillis=lastChecked+(NTP_RETRY_MINUTES*60*1000);
-		  if (millis()>retrymillis) 
-			  {
+      if (millis()>retrymillis) 
+        {
         Serial.print(millis());
-			  Serial.println(" Trying to update the clock, again!");
-			  unsigned long t=ntpClient.getUnixTime(); 
-			  }
-		  }
-	else // it's no a re-check: it's the first time I check
-		  {
+        Serial.println(" Trying to update the clock, again!");
+        unsigned long t=ntpClient.getUnixTime(); 
+        }
+      }
+  else // it's no a re-check: it's the first time I check
+      {
       Serial.print(millis());
-		  Serial.println(" Trying to update the clock for the first time today");
-		  t=ntpClient.getUnixTime();
-		  }
-	if (t>0) // time is updated! yeah!
+      Serial.println(" Trying to update the clock for the first time today");
+      t=ntpClient.getUnixTime();
+      }
+  if (t>0) // time is updated! yeah!
       {
       setTime(t);
       Serial.print(millis());
@@ -353,11 +353,11 @@ bool updateTime(bool forced)
       }
   else
       {
-	    // time not updated, I'll recheck later...
-	    lastChecked=millis();
-	    reCheck=true;
+      // time not updated, I'll recheck later...
+      lastChecked=millis();
+      reCheck=true;
       Serial.print(lastChecked);     
-	    Serial.println(" Clock not updated");
+      Serial.println(" Clock not updated");
       return(false);
       }
     } // prevDay!=today
@@ -519,7 +519,7 @@ client.setFingerprint(csvHostFingerPrint);
         client.stop();
         response=1;
         Serial.print(millis());
-		    Serial.println(" String found. Fetching stopped. Connection closed");
+        Serial.println(" String found. Fetching stopped. Connection closed");
         // will print the found string below
         if (debug) tft.println("Connection closed");
         
@@ -608,7 +608,7 @@ else
       tft.println("Cannot connect");
       }
     Serial.print(millis());
-	  Serial.println(" Cannot connect to CSV host. Sorry");
+    Serial.println(" Cannot connect to CSV host. Sorry");
     client.stop();
     response=-2; // connection error
     }
@@ -665,7 +665,7 @@ void MQTT_send(void)
 // refresh display with new data obtained from CSV
 void updateDisplayData(void)
   {
-	/* csvRowField[] array:
+  /* csvRowField[] array:
    * 
    * 0 data (ex.: 2020-03-25T17:00:00)
    * 1 stato (IT)
@@ -690,7 +690,7 @@ void updateDisplayData(void)
   
   Serial.print(millis());
   Serial.println(" Updating display with new data");
-	// write CSV results on the screen
+  // write CSV results on the screen
   tft.fillScreen(ILI9341_BLACK);
   tft.setCursor(0, 0); // x,y, I start from 7 since my display has first rows broken... :(
   tft.setTextColor(ILI9341_WHITE);  
@@ -838,7 +838,7 @@ void loop(void)
       }
     }
   MQTTClient.loop(); // needed by pubsubclient
-	
+  
   // check if clock update if needed every hour
   if (clockIsSet && !fatalError) 
     {
@@ -872,37 +872,37 @@ void loop(void)
   // (or we're at first run since -1!=0) => check for a CSV update
   if ((clockIsSet) && (lastCsvDateCode!=todayDateCode) && (!fatalError))
     {
-  	// check if is time to update
-		if (!firstCheck && !reCheck) // not verified at startup since firstCheck=true and reCheck=false
-			{
-			if (hour()>=CSV_UPDATE_HOUR) 
-				{
-				firstCheck=true;
+    // check if is time to update
+    if (!firstCheck && !reCheck) // not verified at startup since firstCheck=true and reCheck=false
+      {
+      if (hour()>=CSV_UPDATE_HOUR) 
+        {
+        firstCheck=true;
         Serial.print(millis());
-				Serial.println(" It's hour to update the CSV");
-				}
-			}
+        Serial.println(" It's hour to update the CSV");
+        }
+      }
     // following line bypass thet millis() rollover
     if ((reCheck) && (millis()<lastCheckTime)) lastCheckTime=millis();
-		
-		// we must download the CSV for the first time
-		// or is a recheck, then CSV_RETRY_MINUTES minutes must be passed from last search
+    
+    // we must download the CSV for the first time
+    // or is a recheck, then CSV_RETRY_MINUTES minutes must be passed from last search
     long retrymillis=lastCheckTime+(CSV_RETRY_MINUTES*60*1000);
-		if (firstCheck || (reCheck && (millis()>retrymillis)))
-			  {
-			  if (firstCheck)
-				  {
+    if (firstCheck || (reCheck && (millis()>retrymillis)))
+        {
+        if (firstCheck)
+          {
           Serial.print(millis());
-				  Serial.println(" This is the first check of the CSV file in this day");
-				  }
-			  else
-				  {
+          Serial.println(" This is the first check of the CSV file in this day");
+          }
+        else
+          {
           Serial.print(millis());
-			    Serial.println(" Re-checking the CSV file since the first check gone bad");
-				  }
-			  csvDownloaded=downloadCSV(firstStart); // debug on display only first time
-			  }    
-		  }
+          Serial.println(" Re-checking the CSV file since the first check gone bad");
+          }
+        csvDownloaded=downloadCSV(firstStart); // debug on display only first time
+        }    
+      }
   else
     {
     csvDownloaded=0;
