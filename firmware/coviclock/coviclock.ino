@@ -184,8 +184,8 @@ void WiFi_connect(bool debug)
       {    
       tft.setTextColor(ILI9341_GREEN);  
       tft.print('.');
-      retr++;
       }
+    retr++;
     Serial.print(".");
     if (retr==RETRIES_WIFI)
       {
