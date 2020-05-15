@@ -238,9 +238,9 @@ void WiFi_connect(bool debug)
       {    
       tft.setTextColor(ILI9341_GREEN);  
       tft.print('.');
-      retr++;
       }
-    Serial.print(".");
+   retr++; 
+   Serial.print(".");
     if (retr==RETRIES_WIFI)
       {
       // too many retries with same connection status: something is gone wrong
