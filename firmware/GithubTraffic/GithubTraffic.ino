@@ -41,16 +41,23 @@
  * https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
  */
 
+#include <Adafruit_GFX.h>
+#include <Adafruit_ILI9341.h>
 #include "GitHubManager.hpp"
+#include "mysettings.hpp"
 
 #define BUZZER  D8
 #define S1      D1
 #define S2      D6
-#define WIFI_SSID			"YOUR_WIFI_SSID_STRING"
-#define WIFI_PWD			"TOUR_WIFI_PWD_STRING"
-#define GITHUB_API_HOST		"api.github.com"
-#define GITHUB_FINGER_PRINT	"5974618813ca1234154d110ac17fe667076942f5"			// Scade il 16/07/2020
-#define GITHUB_TOKEN		"token ..."
+// Display connections
+#define TFT_CS    D2
+#define TFT_RST   D3
+#define TFT_DC    D0
+// other 2 pins of display are connected to the SPI hardware port and cannot be
+// specified in the library initialization:
+// MOSI => D7
+// SCK => D5
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 // Use this istruction for network with DHCP
 GitHubManager github;
@@ -90,14 +97,31 @@ void setup()
 	Serial.print(millis());
 	Serial.println(" GitHub Traffic monitor software by Roberto D'Amico, based on Coviclock by Giovanni Bernardo");
 
+	tft.begin();
+	tft.setRotation(0);  // 0 to 3, 0 for vertical with SD pins on top
+	tft.fillScreen(ILI9341_BLACK); // background color
+	tft.setCursor(0,0);
+	tft.setTextColor(ILI9341_LIGHTGREY);
+	tft.setTextSize(1);
+	tft.println("GitHub Traffic");
+	tft.println("by Roberto D'Amico");
+	tft.println();
+	tft.print("Start connection to WiFi: ");
+	tft.println(WIFI_SSID);
 	github.Connect(WIFI_SSID, WIFI_PWD);
-	
+	tft.println("Wifi connected!");
+
+	tft.println("Update time ...");
 	github.UpdateTime(false);
 
+	tft.println("Get data from GitHub jetbot_ros_webconsole repository ...");
 	String jsonData = github.GetGitHubTrafficData(GITHUB_API_HOST, "/repos/bobboteck/jetbot_ros_webconsole/traffic/clones", GITHUB_FINGER_PRINT, GITHUB_TOKEN);
 	Serial.print(millis());
 	Serial.print(" - ");
 	Serial.println(jsonData);
+
+	tft.print("Data: ");
+	tft.println(jsonData);
 }
 
 void loop(void) 
