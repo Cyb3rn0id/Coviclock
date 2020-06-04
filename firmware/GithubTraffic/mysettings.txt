@@ -1,0 +1,14 @@
+#ifndef mysettings_H
+#define mysettings_H
+
+#define WIFI_SSID           "YOUR_WIFI_SSID_STRING"
+#define WIFI_PWD            "TOUR_WIFI_PWD_STRING"
+#define GITHUB_API_HOST     "api.github.com"
+#define GITHUB_FINGER_PRINT "5974618813ca1234154d110ac17fe667076942f5"  // Scade il 16/07/2020
+#define GITHUB_TOKEN        "token ..."
+#define REPOSITORY_NUMBER   8
+
+// List of repository to be check
+char* repositories[REPOSITORY_NUMBER] = { "", "", "", "", "", "", "", "" };
+
+#endif

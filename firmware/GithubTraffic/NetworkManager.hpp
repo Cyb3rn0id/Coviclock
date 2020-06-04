@@ -7,10 +7,11 @@
 #include <EasyNTPClient.h>
 #include <TimeLib.h>
 
-#define WIFI_DEBUG
+#define NETWORK_DEBUG
 #define RETRIES_WIFI 		100	// number of WiFi re-connection retries after a no-connection, at 500mS reconnection rate
+#define NTP_SERVER			"it.pool.ntp.org"
 #define NTP_RETRY_MINUTES	10	// if first NTP connection gone bad, I'll retry after those minutes
-#define TIME_OFFSET			1
+#define TIME_OFFSET			1	// offset from UTC time in your zone time
 
 class NetworkManager
 {
@@ -61,9 +62,9 @@ class NetworkManager
 		 * Check the NTP server to update system time
 		 * 
 		 * @param forced to forse the Update
-		 * @return void
+		 * @return bool 
 		 */
-		bool UpdateTime(bool forced);
+		int8_t UpdateTime(int8_t lastDayUpdate);
 };
 
 #endif

@@ -1,5 +1,5 @@
 /** 
- * GitHub Traffic 
+ * GitHub Traffic v1.0.0
  * This file is part of the Coviclock project (https://github.com/Cyb3rn0id/Coviclock)
  * Copyright (c) 2020 Roberto D'Amico (Bobboteck - https://bobboteck.github.io/)
  * 
@@ -59,7 +59,7 @@
 // SCK => D5
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
-// Use this istruction for network with DHCP
+// Use this instance type for network with DHCP
 GitHubManager github;
 /*
 // Use the code below for static ip configuration
@@ -71,6 +71,9 @@ IPAddress dns2 (8, 8, 4, 4); // second DNS, required for easyntp with static ip
 GitHubManager github = GitHubManager(deviceIP, gateway, subnet, dns1, dns2);
 */
 
+int8_t lastDayUpdateTime = -1;
+int8_t lastDataUpdateHour = -1;
+
 // interrupt vector on button S1 pressing
 ICACHE_RAM_ATTR void Switch1_ISR(void)
 {
@@ -81,6 +84,108 @@ ICACHE_RAM_ATTR void Switch1_ISR(void)
 ICACHE_RAM_ATTR void Switch2_ISR(void)
 {
 	Serial.println("Switch TWO");
+}
+
+// prints the clock on the display
+void printClock(void)
+{
+	String wd[7]={"Domenica ","Lunedi   ","Martedi  ","Mercoledi","Giovedi  ","Venerdi  ","Sabato   "}; // name of weekdays, 9 chars max length in italian
+	String mo[12]={"GEN","FEB","MAR","APR","MAG","GIU","LUG","AGO","SET","OTT","NOV","DIC"}; // name of months
+
+	// write time
+	tft.setCursor(0, 243); // x,y
+	tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);  
+	tft.setTextSize(4);
+	// H,m and s are in number format, so I must add a zero in front of
+	if (hour()<10) tft.print("0");
+	tft.print(hour());
+	tft.print(":");
+	if (minute()<10) tft.print("0");
+	tft.print(minute());
+	tft.print(":");
+	if (second()<10) tft.print("0");
+	tft.print(second());
+	tft.print(" "); // sometimes probably a bug prints a further 0
+
+	tft.println();
+	tft.setTextSize(3);
+	tft.print(wd[weekday()-1]);
+	tft.println();
+	if (day()<10) tft.print("0");
+	tft.print(day());
+	tft.print(" ");
+	tft.print(mo[month()-1]);
+	tft.print(" ");
+	tft.print(year()); // year()-2000 for showing only the last 2 numbers
+	/*tft.println();
+	tft.setTextSize(1);
+	tft.println();
+	tft.setTextColor(ILI9341_GREEN);
+	tft.println("(c)2020 Roberto D'Amico");
+	tft.print("https://bobboteck.github.io/");*/
+}
+
+void PrintBootTrafficData(void)
+{
+	GitHubManager::Clone clonesTraffic[REPOSITORY_NUMBER];
+	GitHubManager::View viewsTraffic[REPOSITORY_NUMBER];
+	String jsonData;
+	String countsString = "";
+	String uniquesString = "";
+	int fieldPosition = 0;
+	int colonPosition = 0;
+	int commaPosition = 0;
+
+	tft.println("Updating data ...");
+	Serial.println("Updating data ...");
+	// Loop for get data from GitHub repositories
+	for(int i=0;i<REPOSITORY_NUMBER;i++)
+	{
+		// Get clone traffic data for current Repository
+		clonesTraffic[i] = github.GetGitHubTrafficCloneData(GITHUB_USERNAME, repositories[i], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+		tft.print(".");
+		// Get view traffic data for current Repository
+		viewsTraffic[i] = github.GetGitHubTrafficViewData(GITHUB_USERNAME, repositories[i], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+		tft.print(".");
+	}
+
+	// Write title data
+	tft.fillScreen(ILI9341_BLACK);
+	tft.setCursor(0,0);
+	tft.setTextColor(ILI9341_WHITE);  
+	tft.setTextSize(2);
+	tft.println("GitHub Traffic Clock");
+	tft.setTextColor(ILI9341_LIGHTGREY);
+	tft.setTextSize(1);
+	tft.println("SW by Roberto D'Amico [@bobboteck]");
+	tft.println("HW by Giovanni Bernardo [@settorezero]");
+	tft.println();
+	// Loop for print traffic data on display
+	for(int i=0;i<REPOSITORY_NUMBER;i++)
+	{
+		tft.setTextColor(ILI9341_YELLOW);
+		tft.setTextSize(1);
+		tft.println(repositories[i]);
+
+		tft.setTextColor(ILI9341_LIGHTGREY);
+		tft.setTextSize(1);
+		tft.print("Clones: ");
+		//tft.print(clones[i][0]);
+		tft.print(clonesTraffic[i].total);
+		tft.print(" (");
+		//tft.print(clones[i][1]);
+		tft.print(clonesTraffic[i].cloner);
+		tft.print(") - Views: ");
+		//tft.print(views[i][0]);
+		tft.print(viewsTraffic[i].total);
+		tft.print(" (");
+		//tft.print(views[i][1]);
+		tft.print(viewsTraffic[i].visitors);
+		tft.println(")");
+		tft.println();
+	}
+
+	//tft.drawFastHLine(0,40,200,ILI9341_MAGENTA);
 }
 
 void setup() 
@@ -98,33 +203,58 @@ void setup()
 	Serial.println(" GitHub Traffic monitor software by Roberto D'Amico, based on Coviclock by Giovanni Bernardo");
 
 	tft.begin();
-	tft.setRotation(0);  // 0 to 3, 0 for vertical with SD pins on top
-	tft.fillScreen(ILI9341_BLACK); // background color
+	tft.setRotation(0);
+	tft.fillScreen(ILI9341_BLACK);
 	tft.setCursor(0,0);
 	tft.setTextColor(ILI9341_LIGHTGREY);
 	tft.setTextSize(1);
-	tft.println("GitHub Traffic");
-	tft.println("by Roberto D'Amico");
+	tft.println("GitHub Traffic 1.0.0");
+	tft.println("SW by Roberto D'Amico [@bobboteck]");
+	tft.println("HW by Giovanni Bernardo [@settorezero]");
 	tft.println();
-	tft.print("Start connection to WiFi: ");
+	tft.println("Start connection to WiFi: ");
 	tft.println(WIFI_SSID);
 	github.Connect(WIFI_SSID, WIFI_PWD);
 	tft.println("Wifi connected!");
 
-	tft.println("Update time ...");
-	github.UpdateTime(false);
+	tft.println("Update Time ...");
+	lastDayUpdateTime = github.UpdateTime(lastDayUpdateTime);
+	// Check update Time status
+	if(lastDayUpdateTime >= 0)
+	{
+		tft.println("Time updated.");
+	}
+	else
+	{
+		tft.println("Cannot update Time");
+	}
+	
+	tft.println("Repository to check:");
+	tft.setTextColor(ILI9341_YELLOW);
+	tft.setTextSize(1);
+	for(int i=0;i<8;i++)
+	{
+		tft.println(repositories[i]);
+	}
 
-	tft.println("Get data from GitHub jetbot_ros_webconsole repository ...");
-	String jsonData = github.GetGitHubTrafficData(GITHUB_API_HOST, "/repos/bobboteck/jetbot_ros_webconsole/traffic/clones", GITHUB_FINGER_PRINT, GITHUB_TOKEN);
-	Serial.print(millis());
-	Serial.print(" - ");
-	Serial.println(jsonData);
+	tft.setTextColor(ILI9341_LIGHTGREY);
+	tft.println();
+	tft.println("Ready");
 
-	tft.print("Data: ");
-	tft.println(jsonData);
+	PrintBootTrafficData();
+	lastDataUpdateHour = hour();
 }
 
 void loop(void) 
 {
-	//String jsonData = github.GetGitHubTrafficData(GITHUB_API_HOST, "/repos/bobboteck/jetbot_ros_webconsole/traffic/clones", GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+	printClock();
+	delay(200);
+
+	if(lastDataUpdateHour < hour())
+	{
+		PrintBootTrafficData();
+		lastDataUpdateHour = hour();
+	}
+
+	lastDayUpdateTime = github.UpdateTime(lastDayUpdateTime);
 }

@@ -9,6 +9,7 @@
 #include "NetworkManager.hpp"
 
 #define GITHUB_DEBUG
+#define GITHUB_API_HOST		"api.github.com"
 
 class GitHubManager : public NetworkManager
 {
@@ -38,6 +39,19 @@ class GitHubManager : public NetworkManager
 		~GitHubManager();
 
 
+		struct Clone
+		{
+			int total;
+			int cloner;
+		};
+
+		struct View
+		{
+			int total;
+			int visitors;
+		};
+
+
 		/**
 		 * Get data from GitHub
 		 * 
@@ -53,7 +67,11 @@ class GitHubManager : public NetworkManager
 		 * @return String of the JSON response
 		 * 
 		 */
-		String GetGitHubTrafficData(char* gitHubApiHost, char* gitHubApiPath, char* gitHubFingerPrint, char* gitHubToken);
+		String GetGitHubTrafficData(char* gitHubApiHost, String gitHubApiPath, char* gitHubFingerPrint, char* gitHubToken);
+
+		Clone GetGitHubTrafficCloneData(char* gitHubUserName, char* gitHubRepository, char* hostFingerPrint, char* gitHubToken);
+
+		View GetGitHubTrafficViewData(char* gitHubUserName, char* gitHubRepository, char* hostFingerPrint, char* gitHubToken);
 };
 
 #endif
