@@ -73,6 +73,10 @@ GitHubManager github = GitHubManager(deviceIP, gateway, subnet, dns1, dns2);
 
 int8_t lastDayUpdateTime = -1;
 int8_t lastDataUpdateHour = -1;
+int8_t repoToUpdate = 0;
+bool updateTrafficData = false;
+GitHubManager::Clone clonesTraffic[REPOSITORY_NUMBER];
+GitHubManager::View viewsTraffic[REPOSITORY_NUMBER];
 
 // interrupt vector on button S1 pressing
 ICACHE_RAM_ATTR void Switch1_ISR(void)
@@ -127,8 +131,6 @@ void printClock(void)
 
 void PrintBootTrafficData(void)
 {
-	GitHubManager::Clone clonesTraffic[REPOSITORY_NUMBER];
-	GitHubManager::View viewsTraffic[REPOSITORY_NUMBER];
 	String jsonData;
 	String countsString = "";
 	String uniquesString = "";
@@ -208,7 +210,7 @@ void setup()
 	tft.setCursor(0,0);
 	tft.setTextColor(ILI9341_LIGHTGREY);
 	tft.setTextSize(1);
-	tft.println("GitHub Traffic 1.0.0");
+	tft.println("GitHub Traffic 1.0.1");
 	tft.println("SW by Roberto D'Amico [@bobboteck]");
 	tft.println("HW by Giovanni Bernardo [@settorezero]");
 	tft.println();
@@ -252,9 +254,54 @@ void loop(void)
 
 	if(lastDataUpdateHour < hour())
 	{
-		PrintBootTrafficData();
+		//PrintBootTrafficData(); // Now print the new code
 		lastDataUpdateHour = hour();
+		updateTrafficData = true;
 	}
+
+	if(updateTrafficData && repoToUpdate < REPOSITORY_NUMBER)
+	{
+		// Print "Updating ..." next to the repo title row on display
+		tft.setCursor(0, 40 + (repoToUpdate * 24));
+		tft.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
+		tft.setTextSize(1);
+		tft.print(repositories[repoToUpdate]);
+		tft.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+		tft.print("  Updating.");
+
+		clonesTraffic[repoToUpdate] = github.GetGitHubTrafficCloneData(GITHUB_USERNAME, repositories[repoToUpdate], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+		tft.print(".");
+		viewsTraffic[repoToUpdate] = github.GetGitHubTrafficViewData(GITHUB_USERNAME, repositories[repoToUpdate], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+		tft.print(".");
+
+		tft.setCursor(0, 40 + (repoToUpdate * 24));
+		tft.setTextColor(ILI9341_YELLOW, ILI9341_BLACK);
+		tft.setTextSize(1);
+		tft.print(repositories[repoToUpdate]);
+		// Delete "  Updating..." string from display
+		tft.print("             ");
+		tft.setCursor(0, 48 + (repoToUpdate * 24));
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
+		tft.setTextSize(1);
+		tft.print("Clones: ");
+		tft.print(clonesTraffic[repoToUpdate].total);
+		tft.print(" (");
+		tft.print(clonesTraffic[repoToUpdate].cloner);
+		tft.print(") - Views: ");
+		tft.print(viewsTraffic[repoToUpdate].total);
+		tft.print(" (");
+		tft.print(viewsTraffic[repoToUpdate].visitors);
+		tft.print(")        ");
+		//tft.print();
+
+		repoToUpdate++;
+	}
+	else
+	{
+		updateTrafficData = false;
+		repoToUpdate = 0;
+	}
+	
 
 	lastDayUpdateTime = github.UpdateTime(lastDayUpdateTime);
 }
