@@ -91,13 +91,14 @@ ICACHE_RAM_ATTR void Switch2_ISR(void)
 }
 
 // prints the clock on the display
-void printClock(void)
+void PrintClock(void)
 {
 	String wd[7]={"Domenica ","Lunedi   ","Martedi  ","Mercoledi","Giovedi  ","Venerdi  ","Sabato   "}; // name of weekdays, 9 chars max length in italian
 	String mo[12]={"GEN","FEB","MAR","APR","MAG","GIU","LUG","AGO","SET","OTT","NOV","DIC"}; // name of months
 
 	// write time
-	tft.setCursor(0, 243); // x,y
+	//tft.setCursor(0, 243); // x,y
+	tft.setCursor(0, 232); // x,y
 	tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);  
 	tft.setTextSize(4);
 	// H,m and s are in number format, so I must add a zero in front of
@@ -106,10 +107,11 @@ void printClock(void)
 	tft.print(":");
 	if (minute()<10) tft.print("0");
 	tft.print(minute());
+	/*tft.setTextSize(2);
 	tft.print(":");
 	if (second()<10) tft.print("0");
 	tft.print(second());
-	tft.print(" "); // sometimes probably a bug prints a further 0
+	tft.print(" "); // sometimes probably a bug prints a further 0*/
 
 	tft.println();
 	tft.setTextSize(3);
@@ -120,13 +122,37 @@ void printClock(void)
 	tft.print(" ");
 	tft.print(mo[month()-1]);
 	tft.print(" ");
-	tft.print(year()); // year()-2000 for showing only the last 2 numbers
-	/*tft.println();
-	tft.setTextSize(1);
+	tft.print(year()); // use year()-2000 for showing only the last 2 numbers
 	tft.println();
+	tft.setTextSize(1);
 	tft.setTextColor(ILI9341_GREEN);
-	tft.println("(c)2020 Roberto D'Amico");
-	tft.print("https://bobboteck.github.io/");*/
+	//tft.println("(c)2020 Roberto D'Amico");
+	tft.print("https://bobboteck.github.io/");
+
+	tft.setCursor(120, 246);
+	tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);  
+	tft.setTextSize(2);
+	tft.print(":");
+	if (second()<10) tft.print("0");
+	tft.print(second());
+	tft.print(" ");
+	
+}
+
+void SetDisplayColor(int newValue, int oldValue)
+{
+	if(newValue > oldValue)
+	{
+		tft.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
+	}
+	else if(newValue < oldValue)
+	{
+		tft.setTextColor(ILI9341_RED, ILI9341_BLACK);
+	}
+	else
+	{
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
+	}
 }
 
 void PrintBootTrafficData(void)
@@ -188,6 +214,7 @@ void PrintBootTrafficData(void)
 	}
 
 	//tft.drawFastHLine(0,40,200,ILI9341_MAGENTA);
+	//tft.drawFastHLine(0,262,240,ILI9341_MAGENTA);
 }
 
 void setup() 
@@ -210,7 +237,7 @@ void setup()
 	tft.setCursor(0,0);
 	tft.setTextColor(ILI9341_LIGHTGREY);
 	tft.setTextSize(1);
-	tft.println("GitHub Traffic 1.0.1");
+	tft.println("GitHub Traffic 1.2.0");
 	tft.println("SW by Roberto D'Amico [@bobboteck]");
 	tft.println("HW by Giovanni Bernardo [@settorezero]");
 	tft.println();
@@ -249,8 +276,8 @@ void setup()
 
 void loop(void) 
 {
-	printClock();
-	delay(200);
+	PrintClock();
+	delay(100);
 
 	if(lastDataUpdateHour < hour())
 	{
@@ -269,9 +296,9 @@ void loop(void)
 		tft.setTextColor(ILI9341_GREEN, ILI9341_BLACK);
 		tft.print("  Updating.");
 
-		clonesTraffic[repoToUpdate] = github.GetGitHubTrafficCloneData(GITHUB_USERNAME, repositories[repoToUpdate], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+		GitHubManager::Clone cloneData = github.GetGitHubTrafficCloneData(GITHUB_USERNAME, repositories[repoToUpdate], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
 		tft.print(".");
-		viewsTraffic[repoToUpdate] = github.GetGitHubTrafficViewData(GITHUB_USERNAME, repositories[repoToUpdate], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
+		GitHubManager::View viewData = github.GetGitHubTrafficViewData(GITHUB_USERNAME, repositories[repoToUpdate], GITHUB_FINGER_PRINT, GITHUB_TOKEN);
 		tft.print(".");
 
 		tft.setCursor(0, 40 + (repoToUpdate * 24));
@@ -281,18 +308,34 @@ void loop(void)
 		// Delete "  Updating..." string from display
 		tft.print("             ");
 		tft.setCursor(0, 48 + (repoToUpdate * 24));
-		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 		tft.setTextSize(1);
+
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 		tft.print("Clones: ");
-		tft.print(clonesTraffic[repoToUpdate].total);
+		SetDisplayColor(cloneData.total, clonesTraffic[repoToUpdate].total);
+		tft.print(cloneData.total);
+		clonesTraffic[repoToUpdate].total = cloneData.total;
+
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 		tft.print(" (");
-		tft.print(clonesTraffic[repoToUpdate].cloner);
+		SetDisplayColor(cloneData.cloner, clonesTraffic[repoToUpdate].cloner);
+		tft.print(cloneData.cloner);
+		clonesTraffic[repoToUpdate].cloner = cloneData.cloner;
+
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 		tft.print(") - Views: ");
-		tft.print(viewsTraffic[repoToUpdate].total);
+		SetDisplayColor(viewData.total, viewsTraffic[repoToUpdate].total);
+		tft.print(viewData.total);
+		viewsTraffic[repoToUpdate].total = viewData.total;
+
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 		tft.print(" (");
-		tft.print(viewsTraffic[repoToUpdate].visitors);
+		SetDisplayColor(viewData.visitors, viewsTraffic[repoToUpdate].visitors);
+		tft.print(viewData.visitors);
+		viewsTraffic[repoToUpdate].visitors = viewData.visitors;
+
+		tft.setTextColor(ILI9341_LIGHTGREY, ILI9341_BLACK);
 		tft.print(")        ");
-		//tft.print();
 
 		repoToUpdate++;
 	}
