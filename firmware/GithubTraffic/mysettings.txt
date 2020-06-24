@@ -4,7 +4,7 @@
 #define WIFI_SSID           "YOUR_WIFI_SSID_STRING"
 #define WIFI_PWD            "TOUR_WIFI_PWD_STRING"
 #define GITHUB_API_HOST     "api.github.com"
-#define GITHUB_FINGER_PRINT "5974618813ca1234154d110ac17fe667076942f5"  // Scade il 16/07/2020
+#define GITHUB_FINGER_PRINT "dfb229c6a6381a599dc9ad922d26f53c838fa587"			// Scade il 17/08/2022
 #define GITHUB_TOKEN        "token ..."
 #define REPOSITORY_NUMBER   8
 
