@@ -44,3 +44,7 @@ After the connection status of WiFi network, the system Time update, the list of
 After the screen show data and clock.
 
 ![boot](../../images/boot.jpg)
+
+## New Feature
+
+* Now show the temperature on the display

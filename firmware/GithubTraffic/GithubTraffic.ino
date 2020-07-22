@@ -1,5 +1,5 @@
 /** 
- * GitHub Traffic v1.0.0
+ * GitHub Traffic v1.3.0
  * This file is part of the Coviclock project (https://github.com/Cyb3rn0id/Coviclock)
  * Copyright (c) 2020 Roberto D'Amico (Bobboteck - https://bobboteck.github.io/)
  * 
@@ -139,6 +139,17 @@ void PrintClock(void)
 	
 }
 
+void printTemperature(float tval)
+{
+	tft.setCursor(180,250);
+	tft.setTextSize(2);
+	tft.setTextColor(ILI9341_PINK,ILI9341_BLACK);
+	tft.print(tval,1);
+	tft.setTextSize(1);
+	tft.setCursor(228,250);
+	tft.print("o"); // looks like a grade symbol?! LOL
+}
+
 void SetDisplayColor(int newValue, int oldValue)
 {
 	if(newValue > oldValue)
@@ -237,7 +248,7 @@ void setup()
 	tft.setCursor(0,0);
 	tft.setTextColor(ILI9341_LIGHTGREY);
 	tft.setTextSize(1);
-	tft.println("GitHub Traffic 1.2.0");
+	tft.println("GitHub Traffic 1.3.0");
 	tft.println("SW by Roberto D'Amico [@bobboteck]");
 	tft.println("HW by Giovanni Bernardo [@settorezero]");
 	tft.println();
@@ -276,12 +287,33 @@ void setup()
 
 void loop(void) 
 {
+	static uint8_t tempCount=0; // counter for analog reading of temperature
+	static float temp=0; // temperature value
+
 	PrintClock();
 	delay(100);
 
+	// read the temperature, one time for every loop iteraction
+	float tempTemp = analogRead(A0);
+	Serial.println(tempTemp);
+	temp += tempTemp;
+
+	tempCount++;
+	if (tempCount==32)
+	{
+		temp=temp/32;										// average on 32 values
+		float mVoltReadFromADC0 = temp * 0.9765625;			// 1V / 1024 = 0.0009765625V = 0.9765625mV
+		float mVoltOnPinA0 = mVoltReadFromADC0 / 0.3125;	// 0.3125==(R2/(R1+R2)) voltage divider on NODE MCU Board
+		float mVoltSensorTemp = mVoltOnPinA0 - 400;			// 400mV is the 0°C value for the sensor
+		float sensorTemp = mVoltSensorTemp / 19.5;			// 19.5mV for each °C
+		printTemperature(sensorTemp);
+
+		temp=0;
+		tempCount=0;
+	}
+
 	if(lastDataUpdateHour < hour())
 	{
-		//PrintBootTrafficData(); // Now print the new code
 		lastDataUpdateHour = hour();
 		updateTrafficData = true;
 	}
